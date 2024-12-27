@@ -59,7 +59,7 @@ jobs:
     name: Publish Release
     runs-on: windows-latest
     needs: build
-    # if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
     permissions: 
       contents: write
     env:
@@ -67,17 +67,17 @@ jobs:
     steps:
       - name: 下载所有产物
         uses: actions/download-artifact@v4.1.8
-  
-      - run: tree
-      # - name: 发布到 Release
-      #   shell: pwsh
-      #   run: |-
-      #     gh release upload ${{ github.ref_name }} windows-x86_64.zip --repo ${{ github.repository }}
 
-      #     if ('${{ needs.build.outputs.msix-conclusion }}' -eq 'success') {
-      #       gh release upload ${{ github.ref_name }} msix#windows-x86_64.msix --repo ${{ github.repository }}
-      #     }
+      - name: 发布到 Release
+        shell: pwsh
+        run: |-
+          Compress-Archive -LiteralPath binary -DestinationPath binary.zip
+          gh release upload ${{ github.ref_name }} windows-x86_64.zip --repo ${{ github.repository }}
 
-      #     if ('${{ needs.build.outputs.installer-conclusion }}' -eq 'success') {
-      #       gh release upload ${{ github.ref_name }} windows-x86_64.exe --repo ${{ github.repository }}
-      #     }
+          if ('${{ needs.build.outputs.msix-conclusion }}' -eq 'success') {
+            gh release upload ${{ github.ref_name }} msix#windows-x86_64.msix --repo ${{ github.repository }}
+          }
+
+          if ('${{ needs.build.outputs.installer-conclusion }}' -eq 'success') {
+            gh release upload ${{ github.ref_name }} installer#windows-x86_64.exe --repo ${{ github.repository }}
+          }
