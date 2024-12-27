@@ -68,21 +68,20 @@ jobs:
       - name: 下载所有产物
         uses: actions/download-artifact@v4.1.8
 
-      - name: 发布到 Release
+      - name: 发布 零散文件 到 Release
         shell: pwsh
         run: |-
-          $Private:Arguments = @('release', 'upload', '${{ github.ref_name }}')
           Compress-Archive -LiteralPath 'binary' -DestinationPath 'windows-x86_64.zip'
-          $Private:Arguments += 'windows-x86_64.zip'
-          if ('${{ needs.build.outputs.msix-conclusion }}' -eq 'success') {
-            Move-Item -LiteralPath 'msix' -Destination 'windows-x86_64.msix'
-            $Private:Arguments += 'windows-x86_64.msix'
-          }
+          gh release upload '${{ github.ref_name }}' 'windows-x86_64.zip' --repo '${{ github.repository }}' --clobber
 
-          if ('${{ needs.build.outputs.installer-conclusion }}' -eq 'success') {
-            Move-Item -LiteralPath 'installer' -Destination 'windows-x86_64.exe'
-            $Private:Arguments += 'windows-x86_64.exe'
-          }
-            $Private:Arguments += '--repo'
-            $Private:Arguments += '${{ github.repository }}'
-          gh $Private:Arguments
+      - name: 发布 MSIX 到 Release
+        shell: bash
+        if: needs.build.outputs.msix-conclusion == 'success'
+        run: gh release upload '${{ github.ref_name }}' 'msix#windows-x86_64.msix' --repo '${{ github.repository }}' --clobber
+          
+
+      - name: 发布 MsixInstaller 到 Release
+        shell: bash
+        if: needs.build.outputs.installer-conclusion == 'success'
+        run: gh release upload '${{ github.ref_name }}' 'installer#windows-x86_64.exe' --repo '${{ github.repository }}' --clobber
+          
