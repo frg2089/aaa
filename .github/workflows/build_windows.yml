@@ -71,13 +71,15 @@ jobs:
       - name: 发布到 Release
         shell: pwsh
         run: |-
-          Compress-Archive -LiteralPath binary -DestinationPath binary.zip
+          Compress-Archive -LiteralPath 'binary' -DestinationPath 'windows-x86_64.zip'
           gh release upload ${{ github.ref_name }} windows-x86_64.zip --repo ${{ github.repository }}
 
           if ('${{ needs.build.outputs.msix-conclusion }}' -eq 'success') {
-            gh release upload ${{ github.ref_name }} msix#windows-x86_64.msix --repo ${{ github.repository }}
+            Move-Item -LiteralPath 'msix' -Destination 'windows-x86_64.msix'
+            gh release upload ${{ github.ref_name }} windows-x86_64.msix --repo ${{ github.repository }}
           }
 
           if ('${{ needs.build.outputs.installer-conclusion }}' -eq 'success') {
-            gh release upload ${{ github.ref_name }} installer#windows-x86_64.exe --repo ${{ github.repository }}
+            Move-Item -LiteralPath 'installer' -Destination 'windows-x86_64.exe'
+            gh release upload ${{ github.ref_name }} windows-x86_64.exe --repo ${{ github.repository }}
           }
